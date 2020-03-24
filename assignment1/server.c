@@ -45,15 +45,51 @@ int main(int argc, char const *argv[])
         perror("listen"); 
         exit(EXIT_FAILURE); 
     } 
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
-                       (socklen_t*)&addrlen))<0) 
-    { 
-        perror("accept"); 
+
+    //---------------------------------------------------------//
+    //                                                         //
+    //////////////////// Split located //////////////////////////
+    //                                                         //
+    //---------------------------------------------------------//
+
+    pid_t pid = fork(); 
+
+    //Error creating child process
+    if( pid < 0) {
         exit(EXIT_FAILURE); 
-    } 
-    valread = read( new_socket , buffer, 1024); 
-    printf("%s\n",buffer ); 
-    send(new_socket , hello , strlen(hello) , 0 ); 
-    printf("Hello message sent\n"); 
+    }
+
+    //Child process
+    else if( pid == 0) {
+
+        //uid of nobody user
+        int status = setuid(65534);
+
+        if(status < 0) {
+            //The user which runs the server process needs to have sudo privieleges
+            printf("Don't have sufficient privileges to change UID\n" ); 
+
+        }
+
+        if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
+                        (socklen_t*)&addrlen))<0) 
+        { 
+            perror("accept"); 
+            exit(EXIT_FAILURE); 
+        } 
+
+        valread = read( new_socket , buffer, 1024); 
+        printf("%s\n",buffer ); 
+        send(new_socket , hello , strlen(hello) , 0 ); 
+        printf("Hello message sent\n"); 
+        
+    }
+
+    //Parent process
+    else if( pid > 0) {
+        wait(NULL);
+    }
+
+    
     return 0; 
 } 
