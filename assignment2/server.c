@@ -71,8 +71,13 @@ int main(int argc, char const *argv[])
 
         }
 
-        //Exec'ing the server executable. All descriptors are passed automatically to the child process
-        execvp("./server", &argv);
+        //Exec'ing
+        if(execvp("./server", &argv) < 0)
+            {
+                perror("There was an error..."); 
+                exit(EXIT_FAILURE); 
+            }
+        
 
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
                         (socklen_t*)&addrlen))<0) 
