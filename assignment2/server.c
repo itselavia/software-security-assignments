@@ -72,12 +72,13 @@ int main(int argc, char const *argv[])
         }
 
         //Exec'ing
-        if(execvp("./server", &argv) < 0)
+	char *args[]={"./server", (char *) &server_fd};  
+        if(execv("./server", args) < 0)
             {
                 perror("There was an error..."); 
                 exit(EXIT_FAILURE); 
             }
-        
+        server_fd = (int) *args[1]
 
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
                         (socklen_t*)&addrlen))<0) 
